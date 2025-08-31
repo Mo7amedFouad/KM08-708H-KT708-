@@ -19,8 +19,8 @@
 	};
 
 	chosen {
-		bootargs = "console=ttyS0,115200";
-		bootargs-override = "console=ttyS0,115200";
+		bootargs = "console=ttyS0,115200 ubi.mtd=firmware rootfstype=squashfs root=/dev/ubiblock0_1";
+		bootargs-override = "console=ttyS0,115200 ubi.mtd=firmware rootfstype=squashfs root=/dev/ubiblock0_1";
 	};
 
 	leds {
