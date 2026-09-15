@@ -28,8 +28,8 @@ permissions:
   actions: write
 
 env:
-  REPO_URL: https://github.com/OmarAL-Dev/mercury_km08-708h
-  REPO_BRANCH: openwrt-25.12
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: openwrt-24.10
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -117,9 +117,15 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt --depth=1
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-    # NOTE: no tree-override copy step. The OmarAL-Dev 25.12 base carries
-    # mercury_km08-708h support natively (DTS + mt7621.mk); copying our
-    # 24.10-era files/ snapshots over it would break the build.
+    - name: Copy custom files
+      run: |
+        if [ -d "files" ]; then
+          echo "Copying custom files to openwrt directory..."
+          cp -r files/* openwrt/
+        else
+          echo "No custom files directory found"
+        fi
+
     - name: Link cached source
       if: steps.cache-openwrt.outputs.cache-hit == 'true'
       run: |
@@ -142,8 +148,7 @@ jobs:
 
     - name: Load custom configuration
       run: |
-        # NOTE: do NOT move files/ into openwrt/files — the 25.12 base needs
-        # no tree overrides; anything under files/ would leak into the image.
+        [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
@@ -234,7 +239,7 @@ jobs:
         echo "- **Target**: ramips/mt7621" >> release.txt
         echo "- **SoC**: MediaTek MT7621AT" >> release.txt
         echo "- **Wi-Fi**: MediaTek MT7615DN Dual Band" >> release.txt
-        echo "- **Base**: OmarAL-Dev/mercury_km08-708h (openwrt-25.12)" >> release.txt
+        echo "- **Base**: openwrt/openwrt openwrt-24.10 + tree overrides (DTS/mt7621.mk)" >> release.txt
         echo "- **Build Date**: $(date)" >> release.txt
         echo "" >> release.txt
         echo "### Custom Settings" >> release.txt
