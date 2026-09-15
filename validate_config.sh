@@ -64,15 +64,9 @@ if [ "$USB_OK" = false ]; then
     exit 1
 fi
 
-# Check banned packages stay out (slim USB-only policy)
-echo "Checking banned packages are absent..."
-if grep -Eq "CONFIG_PACKAGE_(xray-core|adblock|sqm-scripts|https-dns-proxy|tailscale)=y" .config; then
-    echo "✗ A banned fancy package is enabled (xray/adblock/sqm/doh/tailscale)"
-    exit 1
-else
-    echo "✓ No banned packages (xray/adblock/sqm/doh/tailscale)"
-fi
-
+# NOTE: no banned-package policy on the full MShokry-based config — adblock,
+# DoH, sqm-LuCI etc. are intentionally included. USB/proxy presence is what
+# matters (checked above).
 echo ""
 echo "=== Configuration Summary ==="
 echo "Device: Mercury KM08-708H"
