@@ -1,0 +1,9 @@
+# Pinned feed commits reproducing MShokry 2025.08.31-2223
+# (kernel 6.6.102, base a65ca44). Taken from that release's feeds.buildinfo.
+# Workflow checks each feed out to its SHA after `feeds update -a`.
+packages db7e5480779046d47846b718e025182c8f5a7384
+luci f878c0a5cc9ad91b97d94f235d2c787ffdcfc144
+routing d8f9eab170bb63024596c4133c04a84a7aa8a454
+telephony 2a4541d46199ac96fac214d02c908402831c4dc6
+kenzo 5e75c2fc0b83d5559ba45cefcb625327df06e566
+small 809d0444b45aac95ff53d927c99acffe501ab486

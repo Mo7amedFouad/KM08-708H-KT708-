@@ -34,6 +34,8 @@ permissions:
 env:
   REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-24.10
+  # Pinned to MShokry 2025.08.31-2223 (kernel 6.6.102). version.buildinfo r0-a65ca44.
+  BASE_PIN: a65ca44cb7a3e6fbb43b230c7c5a0684d88bae8b
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -139,6 +141,14 @@ jobs:
         cd openwrt
         git pull
 
+    - name: Pin base tree to MShokry release
+      # Makes the build deterministic regardless of cache state: the tree
+      # ends at BASE_PIN (2025.08.31-2223, kernel 6.6.102) every time.
+      run: |
+        cd openwrt
+        git fetch --depth 1 origin $BASE_PIN
+        git checkout $BASE_PIN
+
     - name: Load custom feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
@@ -148,6 +158,19 @@ jobs:
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
+
+    - name: Pin feeds to MShokry release
+      # feeds.lock holds the exact SHAs from 2025.08.31-2223's feeds.buildinfo.
+      run: |
+        cd openwrt
+        while read -r feed sha; do
+          if [ -d "feeds/$feed/.git" ]; then
+            git -C "feeds/$feed" fetch --depth 1 origin "$sha"
+            git -C "feeds/$feed" checkout "$sha"
+          else
+            echo "::warning::feed $feed not found, skipping pin"
+          fi
+        done < $GITHUB_WORKSPACE/feeds.lock
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
