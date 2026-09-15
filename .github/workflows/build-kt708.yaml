@@ -83,7 +83,7 @@ jobs:
         sudo chown $USER:$GROUPS /workdir
         # Setup ccache
         echo "/usr/lib/ccache" >> $GITHUB_PATH
-        ccache --max-size=2G
+        ccache --max-size=4G
         ccache --set-config=compression=true
 
     - name: Cache OpenWrt source
