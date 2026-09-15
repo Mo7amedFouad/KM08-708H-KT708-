@@ -125,6 +125,24 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt --depth=1
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+
+    - name: Link cached source
+      if: steps.cache-openwrt.outputs.cache-hit == 'true'
+      run: |
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd openwrt
+        git fetch --depth 1 origin $REPO_BRANCH
+        git checkout -f $REPO_BRANCH
+
+    - name: Pin base tree to MShokry release
+      # Must run BEFORE Copy custom files: the tree overrides dirty the
+      # working tree and git checkout aborts on dirty tracked files.
+      # Ends at BASE_PIN (2025.08.31-2223, kernel 6.6.102) every time.
+      run: |
+        cd openwrt
+        git fetch --depth 1 origin $BASE_PIN
+        git checkout -f $BASE_PIN
+
     - name: Copy custom files
       run: |
         if [ -d "files" ]; then
@@ -133,21 +151,6 @@ jobs:
         else
           echo "No custom files directory found"
         fi
-
-    - name: Link cached source
-      if: steps.cache-openwrt.outputs.cache-hit == 'true'
-      run: |
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        cd openwrt
-        git pull
-
-    - name: Pin base tree to MShokry release
-      # Makes the build deterministic regardless of cache state: the tree
-      # ends at BASE_PIN (2025.08.31-2223, kernel 6.6.102) every time.
-      run: |
-        cd openwrt
-        git fetch --depth 1 origin $BASE_PIN
-        git checkout $BASE_PIN
 
     - name: Load custom feeds
       run: |
